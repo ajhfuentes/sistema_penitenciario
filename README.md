@@ -29,4 +29,8 @@ Sigue estos pasos para ejecutar el script de la base de datos de manera local:
 
 1. Clona este repositorio:
    ```bash
+<<<<<<< HEAD
    git clone [https://github.com/tu-usuario/sistema-penitenciario.git](https://github.com/tu-usuario/sistema-penitenciario.git)
+=======
+   git clone [https://github.com/tu-usuario/sistema-penitenciario.git](https://github.com/tu-usuario/sistema-penitenciario.git)# sistema_penitenciario
+>>>>>>> 7641e14 (Carga de datos SQL para pruebas locales)

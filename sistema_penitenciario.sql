@@ -376,9 +376,33 @@ EXECUTE FUNCTION registrar_cambio_celda();
 -- DATOS DE PRUEBA (OPCIONAL)
 -- ============================================================
 
--- Insertar roles de personal base
-INSERT INTO personal (nombres, apellidos, cedula, rol) VALUES
-('Admin', 'Sistema', '999999999', 'Administrador');
+-- ============================================================
+-- REGISTROS DE PRUEBA PARA LA TABLA: personal
+-- ============================================================
+
+INSERT INTO personal (nombres, apellidos, cedula, rol, estado_activo) VALUES
+-- Administradores
+('Carlos Alberto', 'Mendoza Ruiz', '15487963', 'Administrador', TRUE),
+('Ana Maria', 'Gomez Peraza', '18254112', 'Administrador', TRUE),
+
+-- Jefes de Seguridad
+('marcos Antonio', 'Jimenez Castro', '12458796', 'JefeSeguridad', TRUE),
+('Luis Eduardo', 'Rodriguez Paez', '14785236', 'JefeSeguridad', FALSE), -- Inactivo de prueba
+
+-- Custodios (Guardias)
+('Pedro Jose', 'infante Torres', '20145896', 'Custodio', TRUE),
+('Juan Ramon', 'Benitez Silva', '23569874', 'Custodio', TRUE),
+('Francisco Javier', 'Morales Ortiz', '19478523', 'Custodio', TRUE),
+('Miguel Angel', 'Gutierrez Alvarez', '16325147', 'Custodio', FALSE), -- Inactivo de prueba
+
+-- Personal Médico
+('Elena Beatriz', 'Vargas Uzcategui', '11258963', 'Medico', TRUE),
+('Ricardo david', 'Suarez chirinos', '13985412', 'Medico', TRUE),
+
+-- Encargados de Admisión (Ingreso de reclusos)
+('Diana Carolina', 'Rojas Fuentes', '22415789', 'EncargadoAdmision', TRUE),
+('Patricia ibarra', 'mendez Colmenares', '17896541', 'EncargadoAdmision', TRUE);
+
 
 -- Insertar pabellones de ejemplo
 INSERT INTO pabellon (nombre_pabellon, tipo_riesgo_permitido, capacidad_total) VALUES
