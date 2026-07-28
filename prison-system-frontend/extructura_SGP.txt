@@ -1,0 +1,29 @@
+prison-system-frontend/
+├── public/
+│   └── index.html
+├── src/
+│   ├── components/
+│   │   ├── common/
+│   │   │   ├── Layout.js          # Layout con sidebar y header
+│   │   │   ├── Sidebar.js
+│   │   │   └── Header.js
+│   │   ├── auth/
+│   │   │   ├── LoginPage.js       # Página de login (estándar + biométrico)
+│   │   │   └── RegisterUserPage.js # Registro de nuevos usuarios
+│   │   ├── dashboard/
+│   │   │   └── DashboardPage.js   # Panel de control con estadísticas y alertas
+│   │   ├── inmates/
+│   │   │   ├── InmateListPage.js  # Listado de reclusos con búsqueda
+│   │   │   └── InmateCapturePage.js # Captura de nuevo recluso (biometría, datos, riesgo)
+│   │   └── routes/
+│   │       └── PrivateRoute.js    # Ruta protegida
+│   ├── context/
+│   │   └── AuthContext.js         # Contexto de autenticación y roles
+│   ├── hooks/
+│   │   └── useAuth.js
+│   ├── services/
+│   │   └── mockData.js            # Datos de ejemplo para reclusos, usuarios, etc.
+│   ├── App.js
+│   ├── index.js
+│   ├── index.css                  # Estilos globales (Roboto, colores)
+│   └── package.json
