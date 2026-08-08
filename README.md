@@ -11,8 +11,8 @@ Este proyecto automatiza la logística, seguridad e ingreso de datos en un recin
 
 ## 🛠️ Tecnologías Utilizadas
 
-* **Base de Datos:** PostgreSQL (o el motor que uses)
-* **Lenguaje/Framework:** [Ej. Node.js / Java / Python - Completa aquí]
+* **Base de Datos:** PostgreSQL
+* **Lenguaje/Framework:** [javaScript, PHP, REACT, Laravel]
 * **Modelado:** Diagramas Entidad-Relación y Casos de Uso (UML)
 
 ## 🗄️ Estructura de la Base de Datos
@@ -29,8 +29,4 @@ Sigue estos pasos para ejecutar el script de la base de datos de manera local:
 
 1. Clona este repositorio:
    ```bash
-<<<<<<< HEAD
-   git clone [https://github.com/tu-usuario/sistema-penitenciario.git](https://github.com/tu-usuario/sistema-penitenciario.git)
-=======
    git clone [https://github.com/tu-usuario/sistema-penitenciario.git](https://github.com/tu-usuario/sistema-penitenciario.git)# sistema_penitenciario
->>>>>>> 7641e14 (Carga de datos SQL para pruebas locales)
