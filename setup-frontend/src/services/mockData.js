@@ -1,3 +1,8 @@
+/*
+CREADO EL 27/07/2026 PARA PROPORCIONAR DATOS SIMULADOS PARA EL DASHBOARD Y PRUEBAS DE LA APLICACIÓN
+AÑADIDO 03/08/26 PARA USAR EL CONTEXTO DE AUTENTICACIÓN Y PROPORCIONAR DATOS SIMULADOS DE USUARIOS  
+*/
+
 // Datos de usuarios para autenticación
 export const mockUsers = [
   { id: 1, username: 'admin', password: 'admin123', name: 'Administrador', role: 'Administrador' },
