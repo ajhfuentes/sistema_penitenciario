@@ -1,0 +1,87 @@
+Preparación: Gestión de versiones PHP (Si ya tienes varias instaladas)Antes de empezar, define con qué versión del sistema vas a operar por defecto: Verificar activa: php -v
+
+Cambiar versión global: sudo update-alternatives --config php (Selecciona el número de la versión deseada, por ejemplo PHP 8.2 o PHP 8.4).
+
+
+1. Actualizar el sistema e instalar PHP con sus extensionesLaravel 11 requiere extensiones clave activas. En lugar de instalar paquetes genéricos que pueden arrastrar versiones no deseadas, asocia las extensiones directamente a la versión de PHP que elegiste (en este ejemplo usamos 8.2, si usas la 8.4 cambia el prefijo a php8.4-):
+
+
+# Actualizar repositorios
+sudo apt update && sudo apt upgrade -y
+
+# Instalar PHP CLI y TODAS las extensiones necesarias de un solo golpe
+sudo apt install php8.2-cli php8.2-common php8.2-xml php8.2-mbstring php8.2-zip php8.2-mysql php8.2-sqlite3 php8.2-curl php8.2-intl php8.2-gd php8.2-bcmath php8.2-tokenizer git unzip -y
+
+
+2. Instalar Composer Global (Método Oficial y Actualizado)Para evitar las advertencias de obsolescencia y fallos con Symfony, descarga el binario oficial más reciente directamente de sus servidores en lugar de usar los repositorios antiguos de Linux Mint:
+
+
+# Descargar el instalador oficial de Composer
+curl -sS https://getcomposer.org | php
+
+# Moverlo a la ruta global del sistema para usarlo con la palabra "composer"
+sudo mv composer.phar /usr/local/bin/composer
+
+3. Verificar Entorno BaseAhora que tienes el motor y el gestor listos, verifica que respondan correctamente:
+
+php -v
+composer --version
+
+(Debe mostrar PHP 8.2+ o 8.4+ y Composer 2.7.x o superior sin advertencias "Deprecated").
+
+4. Crear el proyecto Laravel 11Ubícate en tu carpeta de proyectos (/home/p2asolucionesve/Documentos/Proyectos/SGP) y ejecuta el comando asegurando la descarga de la rama 11:
+
+# Para Laravel 11 (Recomendado para tu entorno actual)
+composer create-project laravel/laravel backend "11.*"
+
+
+(Nota: Si usas la sintaxis sin versión composer create-project laravel/laravel backend, Composer descargará automáticamente la última versión estable del mercado, que actualmente ya es Laravel 11).
+
+
+5. Iniciar el servidor local y validarUna vez que Composer termine de descargar la estructura y genere la carpeta vendor, ingresa al directorio para comprobar el estado e iniciar el sistema:
+
+# 1. Entra a la carpeta del proyecto
+cd backend
+
+# 2. Verifica que el framework responda correctamente (Ahora sí es válido este comando)
+php artisan about
+
+# 3. Enciende el servidor de desarrollo
+php artisan serve
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
