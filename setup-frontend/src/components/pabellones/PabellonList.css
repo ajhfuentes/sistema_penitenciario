@@ -1,0 +1,49 @@
+/* src/components/pabellones/PabellonList.css */
+.pabellon-list-container {
+    padding: 20px;
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.page-header h2 {
+    color: #1e3a5f;
+    margin: 0;
+}
+
+.filters-row {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    align-items: flex-end;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 200px;
+}
+
+.filter-group label {
+    font-size: 13px;
+    font-weight: 500;
+    color: #495057;
+}
+
+.loading {
+    padding: 40px;
+    text-align: center;
+    color: #6c7a89;
+}
+
+.empty-state {
+    padding: 40px;
+    text-align: center;
+    color: #6c7a89;
+    font-size: 16px;
+}

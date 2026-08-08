@@ -1,0 +1,12 @@
+lista de los componentes que debes crear siguiendo el mismo patrón:
+Entidad	        Componente Lista	        Componente Form
+Pabellones	        PabellonList.js	            PabellonForm.js
+Celdas	            CeldaList.js	            CeldaForm.js
+Defensores	        DefensorList.js	            DefensorForm.js
+Causas Penales	    CausaList.js            	CausaForm.js
+Redenciones	        RedencionList.js	        RedencionForm.js
+Boletas         	BoletaList.js	            BoletaForm.js
+Personal	        PersonalList.js	            PersonalForm.js
+Turnos	            TurnoList.js	            TurnoForm.js
+
+Cada uno debe importar su respectivo servicio y usar el Modal. Los formularios deben tener los campos necesarios según el modelo.

@@ -8,11 +8,11 @@ const Header = () => {
   return (
     <header className="app-header">
       <div className="header-left">
-        <span>SISTEMA INTEGRAL PENITENCIARIO</span>
+        <span>SISTEMA DE GESTION PENITENCIARIO</span>
       </div>
       <div className="header-right">
         <span>Bienvenido, {user?.name || 'Usuario'}</span>
-        <span className="role-badge">{user?.role || 'Sin rol'}</span>
+        <span className="role-badge">{user?.rol || 'Sin rol'}</span>
       </div>
     </header>
   );

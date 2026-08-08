@@ -11,20 +11,39 @@ import {
     faUsers, faUserShield, faBuilding, faGavel, 
     faFilePdf, faExclamationTriangle, faClock, 
     faCheckCircle, faTimesCircle, faSync,
-    faUserPlus, faUserMinus
+    faUserPlus, faUserMinus, faChartLine
 } from '@fortawesome/free-solid-svg-icons';
 import './DashboardPage.css';
 
-// Importar recharts
-import {
-    BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
-    ResponsiveContainer, PieChart, Pie, Cell, AreaChart, Area
-} from 'recharts';
+// Importar recharts solo si está disponible
+let BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, AreaChart, Area, LineChart, Line;
+
+try {
+    const recharts = require('recharts');
+    BarChart = recharts.BarChart;
+    Bar = recharts.Bar;
+    XAxis = recharts.XAxis;
+    YAxis = recharts.YAxis;
+    CartesianGrid = recharts.CartesianGrid;
+    Tooltip = recharts.Tooltip;
+    Legend = recharts.Legend;
+    ResponsiveContainer = recharts.ResponsiveContainer;
+    PieChart = recharts.PieChart;
+    Pie = recharts.Pie;
+    Cell = recharts.Cell;
+    AreaChart = recharts.AreaChart;
+    Area = recharts.Area;
+    LineChart = recharts.LineChart;
+    Line = recharts.Line;
+} catch (e) {
+    console.warn('recharts no está instalado, los gráficos no estarán disponibles');
+}
 
 const DashboardPage = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [lastUpdate, setLastUpdate] = useState(null);
+    const [chartsReady, setChartsReady] = useState(true);
     
     const [stats, setStats] = useState({
         reclusos: { total: 0, activos: 0, enIngreso: 0, traslado: 0, libertad: 0 },
@@ -104,8 +123,10 @@ const DashboardPage = () => {
                 unificada: causas.filter(c => c.estado_procesal === 'Unificada').length,
             };
 
+            // Calcular ocupación
             let totalCapacidad = 0;
             let ocupados = 0;
+            
             try {
                 const { celdaService } = await import('../../services/celdaService');
                 const celdasData = await celdaService.getAll();
@@ -117,7 +138,9 @@ const DashboardPage = () => {
                 ocupados = reclusos.filter(r => r.estado_operativo !== 'Libertad').length;
             }
 
-            const ocupacionPorcentaje = totalCapacidad > 0 ? Math.round((ocupados / totalCapacidad) * 100) : 0;
+            const ocupacionPorcentaje = totalCapacidad > 0 
+                ? Math.round((ocupados / totalCapacidad) * 100) 
+                : 0;
 
             setStats({
                 reclusos: reclusosStats,
@@ -157,6 +180,7 @@ const DashboardPage = () => {
                 { name: 'Unificada', value: causasStats.unificada },
             ]);
 
+            // Actividad simulada
             const dias = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
             setActividadData(dias.map((dia, i) => ({
                 dia,
@@ -165,6 +189,7 @@ const DashboardPage = () => {
                 traslados: Math.floor(Math.random() * 3) + 1,
             })));
 
+            // Actividad reciente
             const recientesData = reclusos
                 .filter(r => r.created_at)
                 .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
@@ -179,6 +204,7 @@ const DashboardPage = () => {
 
             setRecientes(recientesData);
 
+            // Alertas
             const alertasData = [];
             if (ocupacionPorcentaje > 85) {
                 alertasData.push({
@@ -216,6 +242,7 @@ const DashboardPage = () => {
         } catch (err) {
             console.error('Error:', err);
             setError('Error al cargar los datos: ' + (err.response?.data?.message || err.message));
+            
             try {
                 const statsData = await reclusoService.getEstadisticas();
                 if (statsData) {
@@ -236,7 +263,7 @@ const DashboardPage = () => {
                     }));
                 }
             } catch (e) {
-                // fallback
+                // Fallback a datos vacíos
             }
         } finally {
             setLoading(false);
@@ -274,6 +301,8 @@ const DashboardPage = () => {
         );
     }
 
+    const chartsEnabled = typeof ResponsiveContainer !== 'undefined';
+
     return (
         <div className="dashboard-container">
             <div className="dashboard-header">
@@ -300,6 +329,7 @@ const DashboardPage = () => {
                 </div>
             )}
 
+            {/* Tarjetas de Estadísticas */}
             <div className="stats-grid">
                 <div className="stat-card">
                     <div className="stat-icon primary">
@@ -330,8 +360,12 @@ const DashboardPage = () => {
                         <div className="stat-number">{formatNumber(stats.centros)}</div>
                         <div className="stat-label">Centros Penales</div>
                         <div className="stat-details">
-                            <span className="stat-detail">📊 {stats.ocupacion.porcentaje}% Ocupación</span>
-                            <span className="stat-detail">👥 {stats.ocupacion.ocupados} / {stats.ocupacion.totalCapacidad}</span>
+                            <span className="stat-detail">
+                                📊 {stats.ocupacion.porcentaje}% Ocupación
+                            </span>
+                            <span className="stat-detail">
+                                👥 {stats.ocupacion.ocupados} / {stats.ocupacion.totalCapacidad}
+                            </span>
                         </div>
                     </div>
                 </div>
@@ -380,9 +414,6 @@ const DashboardPage = () => {
                             <span className="stat-detail active">
                                 <FontAwesomeIcon icon={faCheckCircle} /> {stats.boletas.activas} Activas
                             </span>
-                            <span className="stat-detail">
-                                <FontAwesomeIcon icon={faTimesCircle} /> {stats.boletas.total - stats.boletas.activas} Inactivas
-                            </span>
                         </div>
                     </div>
                 </div>
@@ -403,75 +434,89 @@ const DashboardPage = () => {
                 </div>
             </div>
 
-            <div className="charts-grid">
-                <div className="card chart-card">
-                    <div className="card-title">Distribución por Nivel de Riesgo</div>
-                    <ResponsiveContainer width="100%" height={250}>
-                        <PieChart>
-                            <Pie
-                                data={riesgoData}
-                                cx="50%"
-                                cy="50%"
-                                labelLine={true}
-                                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                                outerRadius={80}
-                                fill="#8884d8"
-                                dataKey="value"
-                            >
-                                {riesgoData.map((entry, index) => (
-                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                ))}
-                            </Pie>
-                            <Tooltip />
-                        </PieChart>
-                    </ResponsiveContainer>
-                </div>
+            {/* Gráficos - solo si recharts está instalado */}
+            {chartsEnabled ? (
+                <>
+                    <div className="charts-grid">
+                        <div className="card chart-card">
+                            <div className="card-title">Distribución por Nivel de Riesgo</div>
+                            <ResponsiveContainer width="100%" height={250}>
+                                <PieChart>
+                                    <Pie
+                                        data={riesgoData}
+                                        cx="50%"
+                                        cy="50%"
+                                        labelLine={true}
+                                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                                        outerRadius={80}
+                                        fill="#8884d8"
+                                        dataKey="value"
+                                    >
+                                        {riesgoData.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                        ))}
+                                    </Pie>
+                                    <Tooltip />
+                                </PieChart>
+                            </ResponsiveContainer>
+                        </div>
 
-                <div className="card chart-card">
-                    <div className="card-title">Estado de Reclusos</div>
-                    <ResponsiveContainer width="100%" height={250}>
-                        <BarChart data={estadoData}>
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis dataKey="name" />
-                            <YAxis />
-                            <Tooltip />
-                            <Legend />
-                            <Bar dataKey="value" fill="#1e3a5f" />
-                        </BarChart>
-                    </ResponsiveContainer>
-                </div>
+                        <div className="card chart-card">
+                            <div className="card-title">Estado de Reclusos</div>
+                            <ResponsiveContainer width="100%" height={250}>
+                                <BarChart data={estadoData}>
+                                    <CartesianGrid strokeDasharray="3 3" />
+                                    <XAxis dataKey="name" />
+                                    <YAxis />
+                                    <Tooltip />
+                                    <Legend />
+                                    <Bar dataKey="value" fill="#1e3a5f" />
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </div>
 
-                <div className="card chart-card">
-                    <div className="card-title">Estado de Causas Penales</div>
-                    <ResponsiveContainer width="100%" height={250}>
-                        <BarChart data={causasData}>
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis dataKey="name" />
-                            <YAxis />
-                            <Tooltip />
-                            <Legend />
-                            <Bar dataKey="value" fill="#17a2b8" />
-                        </BarChart>
-                    </ResponsiveContainer>
-                </div>
+                        <div className="card chart-card">
+                            <div className="card-title">Estado de Causas Penales</div>
+                            <ResponsiveContainer width="100%" height={250}>
+                                <BarChart data={causasData}>
+                                    <CartesianGrid strokeDasharray="3 3" />
+                                    <XAxis dataKey="name" />
+                                    <YAxis />
+                                    <Tooltip />
+                                    <Legend />
+                                    <Bar dataKey="value" fill="#17a2b8" />
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </div>
 
+                        <div className="card chart-card">
+                            <div className="card-title">Actividad Semanal</div>
+                            <ResponsiveContainer width="100%" height={250}>
+                                <AreaChart data={actividadData}>
+                                    <CartesianGrid strokeDasharray="3 3" />
+                                    <XAxis dataKey="dia" />
+                                    <YAxis />
+                                    <Tooltip />
+                                    <Legend />
+                                    <Area type="monotone" dataKey="ingresos" stackId="1" stroke="#28a745" fill="#28a745" fillOpacity={0.6} />
+                                    <Area type="monotone" dataKey="liberaciones" stackId="1" stroke="#dc3545" fill="#dc3545" fillOpacity={0.6} />
+                                    <Area type="monotone" dataKey="traslados" stackId="1" stroke="#ffc107" fill="#ffc107" fillOpacity={0.6} />
+                                </AreaChart>
+                            </ResponsiveContainer>
+                        </div>
+                    </div>
+                </>
+            ) : (
                 <div className="card chart-card">
-                    <div className="card-title">Actividad Semanal</div>
-                    <ResponsiveContainer width="100%" height={250}>
-                        <AreaChart data={actividadData}>
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis dataKey="dia" />
-                            <YAxis />
-                            <Tooltip />
-                            <Legend />
-                            <Area type="monotone" dataKey="ingresos" stackId="1" stroke="#28a745" fill="#28a745" fillOpacity={0.6} />
-                            <Area type="monotone" dataKey="liberaciones" stackId="1" stroke="#dc3545" fill="#dc3545" fillOpacity={0.6} />
-                            <Area type="monotone" dataKey="traslados" stackId="1" stroke="#ffc107" fill="#ffc107" fillOpacity={0.6} />
-                        </AreaChart>
-                    </ResponsiveContainer>
+                    <div className="card-title">📊 Gráficos</div>
+                    <div className="empty-state">
+                        <p>Los gráficos requieren la instalación de recharts</p>
+                        <p className="help-text">Ejecuta: <code>npm install recharts</code></p>
+                    </div>
                 </div>
-            </div>
+            )}
 
+            {/* Actividad Reciente y Alertas */}
             <div className="activity-grid">
                 <div className="card activity-card">
                     <div className="card-title">

@@ -10,22 +10,24 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
     faUsers, faUserShield, faBuilding, faGavel, 
     faFilePdf, faExclamationTriangle, faClock, 
-    faCheckCircle, faTimesCircle, faSync,
-    faUserPlus, faUserMinus
+    faCheckCircle, faTimesCircle, faSpinner,
+    faChartLine, faDoorOpen, faUserPlus, faUserMinus,
+    faSync, faDownload, faEye, faCalendarAlt
 } from '@fortawesome/free-solid-svg-icons';
+import { 
+    BarChart, Bar, XAxis, YAxis, CartesianGrid, 
+    Tooltip, Legend, ResponsiveContainer, PieChart, 
+    Pie, Cell, LineChart, Line, AreaChart, Area
+} from 'recharts';
 import './DashboardPage.css';
 
-// Importar recharts
-import {
-    BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
-    ResponsiveContainer, PieChart, Pie, Cell, AreaChart, Area
-} from 'recharts';
-
 const DashboardPage = () => {
+    // Estados principales
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [lastUpdate, setLastUpdate] = useState(null);
     
+    // Estadísticas
     const [stats, setStats] = useState({
         reclusos: { total: 0, activos: 0, enIngreso: 0, traslado: 0, libertad: 0 },
         centros: 0,
@@ -37,20 +39,23 @@ const DashboardPage = () => {
         ocupacion: { totalCapacidad: 0, ocupados: 0, porcentaje: 0 },
     });
     
+    // Datos para gráficos
+    const [actividadData, setActividadData] = useState([]);
     const [riesgoData, setRiesgoData] = useState([]);
     const [estadoData, setEstadoData] = useState([]);
     const [causasData, setCausasData] = useState([]);
-    const [actividadData, setActividadData] = useState([]);
     const [recientes, setRecientes] = useState([]);
     const [alertas, setAlertas] = useState([]);
 
     const COLORS = ['#1e3a5f', '#28a745', '#ffc107', '#dc3545', '#17a2b8'];
 
+    // Cargar todos los datos
     const loadDashboardData = async () => {
         try {
             setLoading(true);
             setError(null);
 
+            // Cargar todos los datos en paralelo
             const [
                 reclusosData,
                 centrosData,
@@ -72,8 +77,9 @@ const DashboardPage = () => {
             const personal = personalData.data || [];
             const defensores = defensoresData.data || [];
             const causas = causasData.data || [];
-            const boletas = boletasData.data || [];
+            const boletas = boletaService.getAll ? (await boletaService.getAll()).data || [] : [];
 
+            // Procesar estadísticas de reclusos
             const reclusosStats = {
                 total: reclusos.length,
                 activos: reclusos.filter(r => r.estado_operativo === 'Activo').length,
@@ -82,12 +88,14 @@ const DashboardPage = () => {
                 libertad: reclusos.filter(r => r.estado_operativo === 'Libertad').length,
             };
 
+            // Procesar estadísticas de riesgo
             const riesgoStats = {
                 alto: reclusos.filter(r => r.nivel_riesgo === 'Alto').length,
                 medio: reclusos.filter(r => r.nivel_riesgo === 'Medio').length,
                 bajo: reclusos.filter(r => r.nivel_riesgo === 'Bajo').length,
             };
 
+            // Procesar personal
             const personalStats = {
                 total: personal.length,
                 activos: personal.filter(p => p.activo !== false).length,
@@ -96,6 +104,7 @@ const DashboardPage = () => {
                 medicos: personal.filter(p => p.rol === 'Médico').length,
             };
 
+            // Procesar causas
             const causasStats = {
                 total: causas.length,
                 enJuicio: causas.filter(c => c.estado_procesal === 'En Juicio').length,
@@ -104,21 +113,29 @@ const DashboardPage = () => {
                 unificada: causas.filter(c => c.estado_procesal === 'Unificada').length,
             };
 
+            // Calcular ocupación
             let totalCapacidad = 0;
             let ocupados = 0;
+            
+            // Si tenemos datos de celdas, calcular ocupación real
             try {
                 const { celdaService } = await import('../../services/celdaService');
                 const celdasData = await celdaService.getAll();
                 const celdas = celdasData.data || [];
+                
                 totalCapacidad = celdas.reduce((sum, c) => sum + (c.capacidad_maxima || 0), 0);
                 ocupados = reclusos.filter(r => r.estado_operativo !== 'Libertad').length;
             } catch (e) {
+                // Si no hay servicio de celdas, estimar
                 totalCapacidad = reclusos.length * 1.2;
                 ocupados = reclusos.filter(r => r.estado_operativo !== 'Libertad').length;
             }
 
-            const ocupacionPorcentaje = totalCapacidad > 0 ? Math.round((ocupados / totalCapacidad) * 100) : 0;
+            const ocupacionPorcentaje = totalCapacidad > 0 
+                ? Math.round((ocupados / totalCapacidad) * 100) 
+                : 0;
 
+            // Actualizar stats
             setStats({
                 reclusos: reclusosStats,
                 centros: centros.length,
@@ -137,6 +154,7 @@ const DashboardPage = () => {
                 }
             });
 
+            // Datos para gráficos
             setRiesgoData([
                 { name: 'Alto', value: riesgoStats.alto },
                 { name: 'Medio', value: riesgoStats.medio },
@@ -157,14 +175,17 @@ const DashboardPage = () => {
                 { name: 'Unificada', value: causasStats.unificada },
             ]);
 
+            // Datos de actividad (últimos 7 días simulados)
             const dias = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
-            setActividadData(dias.map((dia, i) => ({
+            const actividad = dias.map((dia, i) => ({
                 dia,
                 ingresos: Math.floor(Math.random() * 10) + 1,
                 liberaciones: Math.floor(Math.random() * 5) + 1,
                 traslados: Math.floor(Math.random() * 3) + 1,
-            })));
+            }));
+            setActividadData(actividad);
 
+            // Actividad reciente (simulada con datos reales de reclusos)
             const recientesData = reclusos
                 .filter(r => r.created_at)
                 .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
@@ -179,7 +200,10 @@ const DashboardPage = () => {
 
             setRecientes(recientesData);
 
+            // Alertas (basadas en datos reales)
             const alertasData = [];
+            
+            // Alerta de alta ocupación
             if (ocupacionPorcentaje > 85) {
                 alertasData.push({
                     tipo: 'warning',
@@ -187,6 +211,8 @@ const DashboardPage = () => {
                     fecha: new Date().toLocaleString(),
                 });
             }
+
+            // Alerta de reclusos en ingreso pendientes
             if (reclusosStats.enIngreso > 5) {
                 alertasData.push({
                     tipo: 'info',
@@ -194,14 +220,18 @@ const DashboardPage = () => {
                     fecha: new Date().toLocaleString(),
                 });
             }
+
+            // Alerta de personal insuficiente
             const relacionReclusosPersonal = reclusosStats.total / (personalStats.activos || 1);
             if (relacionReclusosPersonal > 15) {
                 alertasData.push({
                     tipo: 'danger',
-                    mensaje: `Alta carga laboral: ${Math.round(relacionReclusosPersonal)} reclusos por personal`,
+                    mensaje: `Alta carga laboral: ${Math.round(relacionReclusosPersonal)} reclusos por personal activo`,
                     fecha: new Date().toLocaleString(),
                 });
             }
+
+            // Alerta de causas en juicio
             if (causasStats.enJuicio > 10) {
                 alertasData.push({
                     tipo: 'warning',
@@ -214,8 +244,10 @@ const DashboardPage = () => {
             setLastUpdate(new Date().toLocaleString());
 
         } catch (err) {
-            console.error('Error:', err);
-            setError('Error al cargar los datos: ' + (err.response?.data?.message || err.message));
+            console.error('Error cargando dashboard:', err);
+            setError('Error al cargar los datos del dashboard: ' + (err.response?.data?.message || err.message));
+            
+            // Cargar datos de respaldo (estadísticas básicas)
             try {
                 const statsData = await reclusoService.getEstadisticas();
                 if (statsData) {
@@ -236,7 +268,7 @@ const DashboardPage = () => {
                     }));
                 }
             } catch (e) {
-                // fallback
+                // Si falla, usar datos vacíos
             }
         } finally {
             setLoading(false);
@@ -245,14 +277,17 @@ const DashboardPage = () => {
 
     useEffect(() => {
         loadDashboardData();
+        // Actualizar cada 60 segundos
         const interval = setInterval(loadDashboardData, 60000);
         return () => clearInterval(interval);
     }, []);
 
+    // Formatear número
     const formatNumber = (num) => {
         return new Intl.NumberFormat('es-VE').format(num);
     };
 
+    // Obtener clase de badge
     const getBadgeClass = (tipo) => {
         const clases = {
             'danger': 'badge-danger',
@@ -263,6 +298,7 @@ const DashboardPage = () => {
         return `badge ${clases[tipo] || 'badge-secondary'}`;
     };
 
+    // Renderizar loading
     if (loading) {
         return (
             <div className="dashboard-container">
@@ -276,6 +312,7 @@ const DashboardPage = () => {
 
     return (
         <div className="dashboard-container">
+            {/* Header */}
             <div className="dashboard-header">
                 <div>
                     <h2>📊 Panel de Control</h2>
@@ -300,6 +337,7 @@ const DashboardPage = () => {
                 </div>
             )}
 
+            {/* Tarjetas de Estadísticas */}
             <div className="stats-grid">
                 <div className="stat-card">
                     <div className="stat-icon primary">
@@ -330,8 +368,12 @@ const DashboardPage = () => {
                         <div className="stat-number">{formatNumber(stats.centros)}</div>
                         <div className="stat-label">Centros Penales</div>
                         <div className="stat-details">
-                            <span className="stat-detail">📊 {stats.ocupacion.porcentaje}% Ocupación</span>
-                            <span className="stat-detail">👥 {stats.ocupacion.ocupados} / {stats.ocupacion.totalCapacidad}</span>
+                            <span className="stat-detail">
+                                <FontAwesomeIcon icon={faDoorOpen} /> {stats.ocupacion.porcentaje}% Ocupación
+                            </span>
+                            <span className="stat-detail">
+                                <FontAwesomeIcon icon={faUsers} /> {stats.ocupacion.ocupados} / {stats.ocupacion.totalCapacidad}
+                            </span>
                         </div>
                     </div>
                 </div>
@@ -344,9 +386,15 @@ const DashboardPage = () => {
                         <div className="stat-number">{formatNumber(stats.personal.activos)}</div>
                         <div className="stat-label">Personal Activo</div>
                         <div className="stat-details">
-                            <span className="stat-detail">{stats.personal.administradores} Admin</span>
-                            <span className="stat-detail">{stats.personal.custodios} Custodios</span>
-                            <span className="stat-detail">{stats.personal.medicos} Médicos</span>
+                            <span className="stat-detail">
+                                {stats.personal.administradores} Admin
+                            </span>
+                            <span className="stat-detail">
+                                {stats.personal.custodios} Custodios
+                            </span>
+                            <span className="stat-detail">
+                                {stats.personal.medicos} Médicos
+                            </span>
                         </div>
                     </div>
                 </div>
@@ -403,7 +451,9 @@ const DashboardPage = () => {
                 </div>
             </div>
 
+            {/* Gráficos */}
             <div className="charts-grid">
+                {/* Gráfico de Riesgo */}
                 <div className="card chart-card">
                     <div className="card-title">Distribución por Nivel de Riesgo</div>
                     <ResponsiveContainer width="100%" height={250}>
@@ -427,6 +477,7 @@ const DashboardPage = () => {
                     </ResponsiveContainer>
                 </div>
 
+                {/* Gráfico de Estados */}
                 <div className="card chart-card">
                     <div className="card-title">Estado de Reclusos</div>
                     <ResponsiveContainer width="100%" height={250}>
@@ -441,6 +492,7 @@ const DashboardPage = () => {
                     </ResponsiveContainer>
                 </div>
 
+                {/* Gráfico de Causas */}
                 <div className="card chart-card">
                     <div className="card-title">Estado de Causas Penales</div>
                     <ResponsiveContainer width="100%" height={250}>
@@ -455,6 +507,7 @@ const DashboardPage = () => {
                     </ResponsiveContainer>
                 </div>
 
+                {/* Actividad Semanal */}
                 <div className="card chart-card">
                     <div className="card-title">Actividad Semanal</div>
                     <ResponsiveContainer width="100%" height={250}>
@@ -472,7 +525,9 @@ const DashboardPage = () => {
                 </div>
             </div>
 
+            {/* Actividad Reciente y Alertas */}
             <div className="activity-grid">
+                {/* Actividad Reciente */}
                 <div className="card activity-card">
                     <div className="card-title">
                         <FontAwesomeIcon icon={faClock} /> Actividad Reciente
@@ -489,7 +544,9 @@ const DashboardPage = () => {
                                     <div className="activity-content">
                                         <div className="activity-user">
                                             <strong>{item.nombre}</strong>
-                                            <span className={`badge ${item.estado === 'Libertad' ? 'badge-success' : 'badge-info'}`}>
+                                            <span className={`badge ${getBadgeClass(
+                                                item.estado === 'Libertad' ? 'success' : 'info'
+                                            )}`}>
                                                 {item.accion}
                                             </span>
                                         </div>
@@ -503,6 +560,7 @@ const DashboardPage = () => {
                     )}
                 </div>
 
+                {/* Alertas */}
                 <div className="card alerts-card">
                     <div className="card-title">
                         <FontAwesomeIcon icon={faExclamationTriangle} /> Alertas del Sistema
@@ -534,6 +592,7 @@ const DashboardPage = () => {
                 </div>
             </div>
 
+            {/* Footer con resumen */}
             <div className="dashboard-footer">
                 <div className="footer-info">
                     <span>📋 Sistema Integral Penitenciario v1.0</span>
@@ -541,9 +600,15 @@ const DashboardPage = () => {
                     <span>🔄 Actualizado: {lastUpdate || 'N/A'}</span>
                 </div>
                 <div className="footer-stats">
-                    <span><FontAwesomeIcon icon={faUsers} /> {stats.reclusos.total} reclusos</span>
-                    <span><FontAwesomeIcon icon={faBuilding} /> {stats.centros} centros</span>
-                    <span><FontAwesomeIcon icon={faUserShield} /> {stats.personal.activos} personal</span>
+                    <span>
+                        <FontAwesomeIcon icon={faUsers} /> {stats.reclusos.total} reclusos
+                    </span>
+                    <span>
+                        <FontAwesomeIcon icon={faBuilding} /> {stats.centros} centros
+                    </span>
+                    <span>
+                        <FontAwesomeIcon icon={faUserShield} /> {stats.personal.activos} personal
+                    </span>
                 </div>
             </div>
         </div>
