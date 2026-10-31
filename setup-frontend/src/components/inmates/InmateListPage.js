@@ -13,6 +13,9 @@ import Modal from '../common/Modal';
 import InmateForm from './InmateForm';
 import './InmateListPage.css';
 
+import { exportService } from '../../services/exportService';
+//import { faFilePdf } from '@fortawesome/free-solid-svg-icons';
+
 const InmateListPage = () => {
     // Estados principales
     const [inmates, setInmates] = useState([]);
@@ -377,6 +380,14 @@ const InmateListPage = () => {
                                                         title="Eliminar"
                                                     >
                                                         <FontAwesomeIcon icon={faTrash} />
+                                                    </button>
+                                                      
+                                                    <button 
+                                                        className="btn btn-sm btn-danger" 
+                                                        onClick={() => exportService.descargarExpediente(inmate.id)}
+                                                        title="Exportar Expediente a PDF"
+                                                    >
+                                                        <FontAwesomeIcon icon={faFilePdf} />
                                                     </button>
                                                 </div>
                                             </td>

@@ -1,5 +1,7 @@
 lista de los componentes que debes crear siguiendo el mismo patrón:
+
 Entidad	        Componente Lista	        Componente Form
+
 Pabellones	        PabellonList.js	            PabellonForm.js
 Celdas	            CeldaList.js	            CeldaForm.js
 Defensores	        DefensorList.js	            DefensorForm.js
