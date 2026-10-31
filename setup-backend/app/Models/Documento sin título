@@ -1,3 +1,20 @@
-Defensor.php, CausaPenal.php, Expediente.php, Unificacion.php, Redencion.php, BoletaExcarcelacion.php, Personal.php, Turno.php, FaltaDisciplinaria.php
+Defensor.php, 
+
+CausaPenal.php, 
+
+Expediente.php, 
+
+Unificacion.php,
+
+Redencion.php,
+
+BoletaExcarcelacion.php, 
+
+Personal.php, 
+
+Turno.php, 
+
+FaltaDisciplinaria.php
+
 
 Todos los modelos siguen el mismo patrón. Incluyo los más relevantes:
