@@ -2,27 +2,16 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\ValidationException;
-use App\Http\Controllers\Controller;  // <--- Línea agregada
 
 class UserController extends Controller
 {
     public function index()
     {
-        try {
-            $users = User::all();
-            return response()->json([
-                'data' => $users,
-                'message' => 'Usuarios cargados correctamente'
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'error' => $e->getMessage()
-            ], 500);
-        }
+        return response()->json(['data' => User::all()]);
     }
 
     public function store(Request $request)
@@ -32,6 +21,7 @@ class UserController extends Controller
             'email' => 'required|email|unique:users',
             'password' => 'required|min:8',
             'rol' => 'required|in:Administrador,Custodio,Médico',
+            'permisos' => 'nullable|array',
         ]);
 
         $user = User::create([
@@ -39,12 +29,10 @@ class UserController extends Controller
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
             'rol' => $validated['rol'],
+            'permisos' => $validated['permisos'] ?? [],
         ]);
 
-        return response()->json([
-            'data' => $user,
-            'message' => 'Usuario creado exitosamente'
-        ], 201);
+        return response()->json(['data' => $user, 'message' => 'Usuario creado exitosamente'], 201);
     }
 
     public function update(Request $request, User $user)
@@ -54,6 +42,7 @@ class UserController extends Controller
             'email' => 'sometimes|email|unique:users,email,' . $user->id,
             'password' => 'sometimes|min:8',
             'rol' => 'sometimes|in:Administrador,Custodio,Médico',
+            'permisos' => 'nullable|array',
         ]);
 
         if (isset($validated['password'])) {
@@ -62,10 +51,7 @@ class UserController extends Controller
 
         $user->update($validated);
 
-        return response()->json([
-            'data' => $user,
-            'message' => 'Usuario actualizado'
-        ]);
+        return response()->json(['data' => $user, 'message' => 'Usuario actualizado']);
     }
 
     public function destroy(User $user)
